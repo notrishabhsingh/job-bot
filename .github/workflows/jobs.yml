@@ -23,13 +23,29 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+
 
       - name: Install Dependencies
         run: pip install -r requirements.txt
 
       - name: Run Bot
         run: python main.py
+
+
+      - name: Commit Updated Seen Jobs
+
+        run: |
+
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+
+          git add seen_jobs.json
+
+          git commit -m "update seen jobs" || echo "No changes to commit"
+
+          git push
