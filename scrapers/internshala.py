@@ -13,7 +13,7 @@ def fetch_internshala_jobs():
 
     try:
 
-        response = requests.get(url, headers=headers)
+        response = requests.get(url, headers=headers, timeout=30)
 
         soup = BeautifulSoup(response.text, "html.parser")
 
@@ -21,29 +21,39 @@ def fetch_internshala_jobs():
 
         for job in jobs:
 
-            title_tag = job.find("h3")
+            title_tag = job.find(class_="job-internship-name")
 
             if not title_tag:
                 continue
 
-            title = title_tag.text.strip()
+            title = title_tag.get_text(strip=True)
 
-            link_tag = job.find("a")
+            link_tag = job.find("a", class_="job-title-href")
 
             if not link_tag:
                 continue
 
             href = link_tag.get("href")
 
+            if not href:
+                continue
+
             full_url = "https://internshala.com" + href
 
+            company_tag = job.find(class_="company-name")
+            company = company_tag.get_text(strip=True) if company_tag else "INTERNSHALA"
+
+            location_tag = job.find(class_="locations")
+            location = location_tag.get_text(" ", strip=True) if location_tag else ""
+
             all_jobs.append({
-                "company": "INTERNSHALA",
+                "company": company.upper(),
                 "title": title,
-                "url": full_url
+                "url": full_url,
+                "location": location
             })
 
-        print("✅ Internshala Done")
+        print(f"✅ Internshala Done ({len(all_jobs)} jobs)")
 
     except Exception as e:
         print("❌ Internshala Error:", e)

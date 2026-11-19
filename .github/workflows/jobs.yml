@@ -3,16 +3,26 @@ name: Job Bot
 on:
 
   schedule:
-    # Every 2 hours
-    - cron: '0 */2 * * *'
+    # Every 4 hours
+    - cron: '0 */4 * * *'
 
   workflow_dispatch:
+
+# Needed so the workflow can commit the updated seen_jobs.json back to the repo.
+permissions:
+  contents: write
+
+# Never let two runs race for seen_jobs.json
+concurrency:
+  group: job-bot
+  cancel-in-progress: false
 
 jobs:
 
   run-bot:
 
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     env:
       TOKEN: ${{ secrets.TOKEN }}
@@ -28,6 +38,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: pip
 
 
       - name: Install Dependencies
@@ -46,6 +57,13 @@ jobs:
 
           git add seen_jobs.json
 
-          git commit -m "update seen jobs" || echo "No changes to commit"
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
 
+          git commit -m "update seen jobs"
+
+          # Keep the branch up to date in case something else pushed meanwhile
+          git pull --rebase origin main
           git push

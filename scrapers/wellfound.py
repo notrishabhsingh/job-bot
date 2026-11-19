@@ -13,7 +13,7 @@ def fetch_wellfound_jobs():
 
     try:
 
-        response = requests.get(url, headers=headers)
+        response = requests.get(url, headers=headers, timeout=30)
 
         soup = BeautifulSoup(response.text, "html.parser")
 

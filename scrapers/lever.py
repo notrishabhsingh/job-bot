@@ -1,9 +1,11 @@
 import requests
 
+# Verified public Lever boards (api.lever.co/v0/postings/<name>)
 companies = [
-    "netflix",
-    "uber",
-    "postman",
+    "meesho",
+    "cred",
+    "zeta",
+    "gopuff",
 ]
 
 def fetch_lever_jobs():
@@ -16,7 +18,7 @@ def fetch_lever_jobs():
 
         try:
 
-            response = requests.get(url)
+            response = requests.get(url, timeout=30)
 
             if response.status_code != 200:
                 print(f"❌ Lever Failed: {company}")
@@ -31,7 +33,8 @@ def fetch_lever_jobs():
                 all_jobs.append({
                     "company": company.upper(),
                     "title": job["text"],
-                    "url": job["hostedUrl"]
+                    "url": job["hostedUrl"],
+                    "location": (job.get("categories") or {}).get("location") or ""
                 })
 
         except Exception as e:

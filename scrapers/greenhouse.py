@@ -20,7 +20,7 @@ def fetch_greenhouse_jobs():
 
         try:
 
-            response = requests.get(url)
+            response = requests.get(url, timeout=30)
 
             if response.status_code != 200:
                 print(f"❌ Failed: {company}")

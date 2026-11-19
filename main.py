@@ -21,6 +21,9 @@ except:
     seen_jobs = []
 
 
+seen_set = set(seen_jobs)
+
+
 def is_good_job(title):
 
     title = title.lower()
@@ -91,6 +94,20 @@ async def main():
 
     print(f"\n📦 Total Raw Jobs Found: {len(jobs)}")
 
+    # Drop duplicates that appear multiple times within the same run
+    unique_jobs = {}
+
+    for job in jobs:
+
+        job_url = job.get("url")
+
+        if job_url and job_url not in unique_jobs:
+            unique_jobs[job_url] = job
+
+    jobs = list(unique_jobs.values())
+
+    print(f"🧹 Unique Jobs: {len(jobs)}")
+
     filtered_jobs = []
 
     for job in jobs:
@@ -104,7 +121,8 @@ async def main():
 
         if not is_good_location(location):
             continue
-        if job_url in seen_jobs:
+
+        if job_url in seen_set:
             continue
 
         filtered_jobs.append(job)
@@ -138,6 +156,7 @@ async def main():
     random.shuffle(final_jobs)
 
     notifications_sent = 0
+    notifications_failed = 0
 
     for job in final_jobs:
 
@@ -146,7 +165,7 @@ async def main():
 
 🏢 Company: {job['company']}
 💼 Role: {job['title']}
-📍 Location: {job.get('location', 'Not Mentioned')}
+📍 Location: {job.get('location') or 'Not Mentioned'}
 
 🔗 Apply Here:
 {job['url']}
@@ -161,12 +180,18 @@ async def main():
             # Prevent Telegram rate limit
             await asyncio.sleep(2)
 
+            notifications_sent += 1
+
         except Exception as e:
+
+            # Don't mark the job as seen: it will be retried on the next run
             print("Telegram Error:", e)
+            notifications_failed += 1
+            continue
 
-        seen_jobs.append(job["url"])
-
-        notifications_sent += 1
+        if job["url"] not in seen_set:
+            seen_set.add(job["url"])
+            seen_jobs.append(job["url"])
 
 
     with open("seen_jobs.json", "w") as f:
@@ -180,6 +205,7 @@ async def main():
     print(f"📦 Raw Jobs Found: {len(jobs)}")
     print(f"✅ Filtered Jobs: {len(filtered_jobs)}")
     print(f"🔥 Notifications Sent: {notifications_sent}")
+    print(f"⚠️ Notifications Failed: {notifications_failed}")
     print(f"🏆 Top Company Jobs: {len(top_jobs)}")
     print(f"🚀 Other Jobs: {len(other_jobs)}")
 

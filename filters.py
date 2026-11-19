@@ -34,8 +34,10 @@ BAD_KEYWORDS = [
     "communications",
     "business",
     "recruiter",
-    "hr",
-    "talent",
+    "recruiting",
+    "human resources",
+    "people operations",
+    "talent acquisition",
     "customer support",
 ]
 
