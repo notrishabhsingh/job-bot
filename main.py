@@ -1,6 +1,21 @@
 import json
 import asyncio
 import random
+import os
+import sys
+from datetime import datetime
+
+from dotenv import load_dotenv
+
+# Load TOKEN / CHAT_ID from .env for local runs (GitHub Actions uses real env vars)
+load_dotenv()
+
+# Windows consoles/log files default to cp1252, which crashes on the emoji below
+try:
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+except Exception:
+    pass
 
 from filters import *
 from telegram_bot import send_telegram_message
@@ -14,8 +29,12 @@ from scrapers.internshala import fetch_internshala_jobs
 from scrapers.uplers import fetch_uplers_jobs
 
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+SEEN_JOBS_FILE = os.path.join(BASE_DIR, "seen_jobs.json")
+
+
 try:
-    with open("seen_jobs.json", "r") as f:
+    with open(SEEN_JOBS_FILE, "r") as f:
         seen_jobs = json.load(f)
 except:
     seen_jobs = []
@@ -53,6 +72,7 @@ async def main():
 
     jobs = []
 
+    print(f"\n===== RUN {datetime.now():%Y-%m-%d %H:%M:%S} =====")
     print("\n🚀 Fetching jobs from all sources...\n")
 
 
@@ -194,7 +214,7 @@ async def main():
             seen_jobs.append(job["url"])
 
 
-    with open("seen_jobs.json", "w") as f:
+    with open(SEEN_JOBS_FILE, "w") as f:
         json.dump(seen_jobs, f, indent=4)
 
 

@@ -10,7 +10,8 @@ An automated job discovery platform that aggregates entry-level Software Enginee
 - Intelligent filtering by role, company, and location
 - Duplicate job detection and prevention
 - Real-time Telegram notifications
-- Scheduled execution every 2 hours
+- Scheduled execution every 4 hours
+- Runs locally via Windows Task Scheduler (no paid hosting required)
 - Automated workflows using GitHub Actions
 - REST API and web scraping integration
 - Personalized job discovery pipeline
@@ -19,17 +20,31 @@ An automated job discovery platform that aggregates entry-level Software Enginee
 
 Backend: Python
 
-Automation: GitHub Actions
+Automation: Windows Task Scheduler / GitHub Actions
 
 Integration: Telegram Bot API
 
 Data Collection: Web Scraping, REST APIs
 
-Deployment: GitHub Actions
+Deployment: Local machine or GitHub Actions
 
 ## Workflow
 
 Job Sources → Data Collection → Filtering Engine → Duplicate Detection → Telegram Notifications
+
+## Run Locally (no hosting required)
+
+1. Install dependencies: `pip install -r requirements.txt`
+2. Copy `.env.example` to `.env` and fill in `TOKEN` and `CHAT_ID`
+3. Run once manually to confirm: `python main.py`
+4. Schedule it every 4 hours with Windows Task Scheduler:
+
+```
+schtasks /Create /TN "Job Bot" /TR "\"%CD%\run_bot.bat\"" /SC HOURLY /MO 4 /ST 00:00 /F
+```
+
+Output is appended to `logs\jobbot.log`. Remove the task with
+`schtasks /Delete /TN "Job Bot" /F`.
 
 
 
